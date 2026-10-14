@@ -231,7 +231,16 @@ export default async function handler(req, res) {
     let searchContext = "";
     if (isSearchIntent(text) && process.env.SERPER_API_KEY) {
       // Search has a very short budget because Alice expects a response within 4.5 seconds.
-      searchContext = await searchWeb(text, Math.min(SERPER_TIMEOUT_MS, Math.max(0, remainingMs() - 2600)));
+      const searchQuery =
+  /(?:погод|температур|осадк|дожд|снег|ветер)/i.test(text) &&
+  !/(?:в|для)\s+[а-яё-]+/i.test(text)
+    ? `${text} в Якутске`
+    : text;
+
+searchContext = await searchWeb(
+  searchQuery,
+  Math.min(SERPER_TIMEOUT_MS, Math.max(0, remainingMs() - 2600))
+);
     }
 
     const answer = await askGemini(
